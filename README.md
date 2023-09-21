@@ -12,9 +12,11 @@ Data Exchange Options: Send XML files to eManager using Http or Fileshare
 Parameter Tracking: Remembers previous test parameters for efficient recurring tests.
 In summary, this tool simplifies testing by automating processes, creating XML files with product and quantity data, and allowing dynamic configuration.
 
-Start Window screenshot: (https://github.com/marco071190/EL_testing_tool/blob/main/gr.PNG)
+Start Screenshot: (https://github.com/marco071190/EL_testing_tool/blob/main/start_window.PNG)
 
-Generate Goods Receival screenshot: (https://github.com/marco071190/el_testing_tool/assets/27895366/82d06746-e2f3-46f8-922e-2e7b84fb20df)
+Generate Goods Receival: (https://github.com/marco071190/EL_testing_tool/blob/main/gr.PNG)
 
-Generate PickList screenshot: (https://github.com/marco071190/el_testing_tool/assets/27895366/08891b0d-6a9b-4f0c-b750-684589182f9c)
+Generate Picklist: (https://github.com/marco071190/EL_testing_tool/blob/main/picklist.PNG)
+
+
 

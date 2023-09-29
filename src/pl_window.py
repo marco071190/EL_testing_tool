@@ -3,11 +3,12 @@ import json
 import os
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QPushButton, QVBoxLayout, QRadioButton, QWidget, QFormLayout, QFrame, QHBoxLayout, QCheckBox
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox, QGridLayout, QLabel, QButtonGroup, QScrollArea
+from PyQt5.QtWidgets import QMessageBox, QGridLayout, QLabel, QButtonGroup, QScrollArea,QMenu
 from PyQt5.QtGui import QFont
 from xml_creation import *
 from file_dispatcher import * 
-
+from message_sender_window import * 
+from message_sender_controller import * 
 class PLWindow(QDialog):
     def __init__(self):
         super().__init__()
@@ -16,7 +17,8 @@ class PLWindow(QDialog):
         #self.setGeometry(100, 100, 600, 400)  # Increased width for transmission options
         self.setMinimumSize(1000,800)
         self.communication_protocol = ""
-
+        self.message_sender_controller=MessageSenderController()
+        self.message_sender_window=MultipleMessageSender(2)
         # Create a widget for the internal content of the window
         content_widget = QWidget()
 
@@ -73,6 +75,12 @@ class PLWindow(QDialog):
         self.enable_sequence_checkbox = QCheckBox("Enable Sequence Field")
         self.enable_sequence_checkbox.setFont(QFont("Arial", 12))
         self.enable_sequence_checkbox.stateChanged.connect(self.toggle_sequence_field)
+        
+        # "More button":
+        self.more_button=QPushButton("More....",self)
+        self.more_button.setFont(QFont("Arial", 12))
+        self.more_button.setMaximumSize(80, 120)
+        self.more_button.clicked.connect(self.toggle_more_btn)
 
         # Radio buttons to choose between JSON and XML
         self.format_file_label = QLabel("File Type:")
@@ -81,6 +89,10 @@ class PLWindow(QDialog):
         self.json_radio.setFont(QFont("Arial", 12))
         self.xml_radio = QRadioButton("XML")
         self.xml_radio.setFont(QFont("Arial", 12))
+
+        # Create vertical layout for more button
+        v_more_btn_layout=QVBoxLayout()
+        v_more_btn_layout.addWidget(self.more_button)
         # Add a line edit field for URL or path
         self.fileshare_path_label = QLabel("FileShare Path")
         self.fileshare_path_label.setFont(QFont("Arial", 12))
@@ -159,6 +171,7 @@ class PLWindow(QDialog):
         grid_layout.addLayout(button_layout, 3, 0, 1, 2)  # Buttons
         grid_layout.addLayout(fileshare_path_layout, 4, 0, 1, 3)
         grid_layout.addLayout(http_request_layout, 5, 0, 1, 3,)
+        grid_layout.addLayout(v_more_btn_layout, 6, 0)
         layout.addLayout(grid_layout)
 
         content_widget.setLayout(layout)
@@ -313,6 +326,35 @@ class PLWindow(QDialog):
             path = fshare.get_fileshare_path_from_config_file(2)    #identifies the picklist 
             fshare.set_fileshare_path(path)
             fshare.copy_file_in_path(file_name)
+
+    def check_fields_before_send(self,prod_id,quantity,http):
+        if not prod_id or not quantity or not http:
+                return -1  # Almeno uno dei campi è vuoto
+        elif not quantity.isdigit():
+                return -2  # Quantity non è un numero intero
+        else:
+                return 0  # Tutti i campi sono stati compilati correttamente
+
+    def azione1(self):
+        print("azione 1 ")
+        if  self.communication_protocol == 2 :
+            error_box = QMessageBox()
+            error_box.setIcon(QMessageBox.Critical)
+            error_box.setWindowTitle("Error")
+            error_box.setText("Error: Please switch to Http")
+            error_box.exec()
+        elif self.communication_protocol == 1 :
+            self.message_sender_window.show()
+    
+    def toggle_more_btn(self):
+        print("toggle_more_btn")
+        context_menu = QMenu(self)
+        # Aggiungi azioni (voci di menu) al menu contestuale
+        action1 = context_menu.addAction("Massive Picklist Messages Test")
+        # Visualizza il menu contestuale al punto in cui è stato cliccato il pulsante "More..."
+        action1.triggered.connect(self.azione1)
+        pos = self.more_button.mapToGlobal(self.more_button.rect().bottomLeft())
+        context_menu.exec_(pos)
 
     def toggle_order_type_field(self, state):
         # State is either Qt.Checked (2) or Qt.Unchecked (0)

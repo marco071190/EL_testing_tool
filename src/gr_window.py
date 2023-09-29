@@ -3,12 +3,13 @@ import json
 import os
 from PyQt5.QtWidgets import QApplication, QDialog, QLineEdit, QPushButton, QVBoxLayout, QRadioButton, QWidget, QFormLayout, QFrame, QHBoxLayout, QCheckBox
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox, QGridLayout, QLabel, QButtonGroup, QScrollArea
+from PyQt5.QtWidgets import QMessageBox, QGridLayout, QLabel, QButtonGroup, QScrollArea,QMenu
 from PyQt5.QtGui import QFont
 from xml_creation import *
 from file_dispatcher import *
 from gr_creation import *
-
+from message_sender_window import * 
+from message_sender_controller import * 
 class GRWindow(QDialog):
     def __init__(self):
         super().__init__()
@@ -16,7 +17,8 @@ class GRWindow(QDialog):
         self.setWindowTitle("Good Receival Message configuration")
         self.setMinimumSize(1000, 800)
         self.communication_protocol = ""
-
+        self.message_sender_controller=MessageSenderController()
+        self.message_sender_window=MultipleMessageSender(1)
         # Create a widget for the internal content of the window
         content_widget = QWidget()
 
@@ -76,6 +78,11 @@ class GRWindow(QDialog):
         self.enable_expiring_date_checkbox.setFont(QFont("Arial", 12))
         self.enable_expiring_date_checkbox.stateChanged.connect(self.toggle_expiring_date_field)
 
+        # "More button":
+        self.more_button=QPushButton("More....",self)
+        self.more_button.setMaximumSize(80, 120)
+        self.more_button.setFont(QFont("Arial", 12))
+        self.more_button.clicked.connect(self.toggle_more_btn)
 
         # Radio buttons to choose between JSON and XML
         self.format_file_label = QLabel("File Type:")
@@ -142,11 +149,15 @@ class GRWindow(QDialog):
         button_layout.addWidget(confirm_button)
         button_layout.addWidget(save_button)
 
+
         format_layout = QVBoxLayout()
         format_layout.addWidget(self.format_file_label)
         format_layout.addWidget(self.json_radio)
         format_layout.addWidget(self.xml_radio)
-
+        # Create vertical layout for more button
+        v_more_btn_layout=QVBoxLayout()
+        v_more_btn_layout.addWidget(self.more_button)
+        
         # Arrange everything in a grid layout
         grid_layout = QGridLayout()
         grid_layout.addLayout(format_layout, 0, 0)
@@ -157,6 +168,7 @@ class GRWindow(QDialog):
         grid_layout.addLayout(button_layout, 4, 0, 1, 2)
         grid_layout.addLayout(fileshare_path_layout, 5, 0, 1, 3)
         grid_layout.addLayout(http_request_layout, 6, 0, 1, 3)
+        grid_layout.addLayout(v_more_btn_layout, 7, 0)
         layout.addLayout(grid_layout)
 
         content_widget.setLayout(layout)
@@ -284,6 +296,7 @@ class GRWindow(QDialog):
                             expiring_date.setEnabled(False)
         except FileNotFoundError:
             print("No existing data file found. Starting with an empty list.")
+            return -1
 
     def generateGoodsReceival(self):
         self.save_fields_on_file()
@@ -321,6 +334,42 @@ class GRWindow(QDialog):
             self.http_address_input.setEnabled(False)
             self.http_radio.setChecked(False)
             print("Fileshare option")
+    
+    def show_error_message(self):
+        error_box = QMessageBox()
+        error_box.setIcon(QMessageBox.Critical)
+        error_box.setWindowTitle("Error:data field not valid")
+        error_box.exec()
+    
+    def check_fields_before_send(self,prod_id,quantity,http):
+        if not prod_id or not quantity or not http:
+                return -1  # Almeno uno dei campi è vuoto
+        elif not quantity.isdigit():
+                return -2  # Quantity non è un numero intero
+        else:
+                return 0  # Tutti i campi sono stati compilati correttamente
+
+    def azione1(self):
+        print("azione 1 ")
+        if  self.communication_protocol == 2 :
+            error_box = QMessageBox()
+            error_box.setIcon(QMessageBox.Critical)
+            error_box.setWindowTitle("Error")
+            error_box.setText("Error: Please switch to Http")
+            error_box.exec()
+        elif self.communication_protocol == 1 :
+            self.message_sender_window.show()
+    
+
+    def toggle_more_btn(self):
+        print("toggle_more_btn")
+        context_menu = QMenu(self)
+        # Aggiungi azioni (voci di menu) al menu contestuale
+        action1 = context_menu.addAction("Massive Good Receival Messages Test")
+        # Visualizza il menu contestuale al punto in cui è stato cliccato il pulsante "More..."
+        action1.triggered.connect(self.azione1)
+        pos = self.more_button.mapToGlobal(self.more_button.rect().bottomLeft())
+        context_menu.exec_(pos)
 
     def clear_fields(self):
         confirm_dialog = QMessageBox()

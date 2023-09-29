@@ -41,10 +41,13 @@ class MyApp(QMainWindow):
         layout = QVBoxLayout(central_widget)
         layout.addWidget(self.create_gr_btn)
         layout.addWidget(self.create_pl_btn)
+        #Create massive inbound test
+        
+
 
         # Aggiungi il logo come QLabel
         logo_label = QLabel(self)
-        pixmap = QPixmap("src/el_logo.jpg")  # Utilizza il nuovo nome del file
+        pixmap = QPixmap("el_logo.jpg")  # Utilizza il nuovo nome del file
         scaled_pixmap = pixmap.scaled(pixmap.width() // 2, pixmap.height() // 2, Qt.KeepAspectRatio)
         logo_label.setPixmap(scaled_pixmap)
         logo_label.setAlignment(Qt.AlignCenter)

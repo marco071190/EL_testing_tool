@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import json
+import os
 import random
 import datetime
 import string
@@ -8,6 +9,7 @@ from file_dispatcher import HttpFileSender
 class GR_XMLInputDataManager:
     def __init__(self):
         self.in_data = None
+        self.protocolNumber = None
         self.load_data()
         self.get_number_of_fields()
         self.get_options()
@@ -40,7 +42,7 @@ class GR_XMLInputDataManager:
     def get_options(self):
         if "HTTP" == self.data["Transmission Options"]:
             self.protocolNumber = 1  # Protocol number for http
-        elif "FileShare" == self.data["Transmission Options"]:
+        elif "Fileshare" == self.data["Transmission Options"]:
             self.protocolNumber = 2  # Protocol number for FileShare
         if "XML" == self.data["Data Format"]:
             self.format_file_number = 1  # Format file number for XML
@@ -51,20 +53,30 @@ class GR_XMLInputDataManager:
         self.set_quantity_list()
     
     def generate_random_number(self):
-        current_date_time=datetime.datetime.now()
+        current_date_time = datetime.datetime.now()
         seed_value = int(current_date_time.timestamp())
         random.seed(seed_value)
         random_number = random.randint(1, 10000000)
+        microsecondi = int(current_date_time.strftime("%f"))
+        random_number += microsecondi 
         return random_number
 
-    def generate_random_string(self,length):
-    # Define the characters you want in your random string
+
+    def generate_random_string(self, length):
+        # Define the characters you want in your random string
         characters = string.ascii_uppercase + string.digits + string.hexdigits
-    # Generate the random string of the specified length
+        # Generate the random string of the specified length
         random_string = ''.join(random.choice(characters) for _ in range(length))
+
+        # Aggiungi i microsecondi alla stringa casuale
+        microsecondi = datetime.datetime.now().strftime("%f")
+        microsecondi = ''.join(filter(str.isdigit, microsecondi))  # Rimuovi caratteri non numerici
+        random_string += microsecondi
+
         return random_string
 
-    def generate_goods_receival_xml(self):
+
+    def generate_goods_receival_xml(self, pathname=None):
         
         random_ext_receival_list_id = self.generate_random_string(10)
         n_transaction_id = self.generate_random_number()
@@ -99,19 +111,22 @@ class GR_XMLInputDataManager:
         # Scrivi l'ElementTree su un file XML con l'intestazione XML
         current_date_time = datetime.datetime.now()
         output_file = current_date_time.strftime("GR-%Y%m%d_%H_%M_%S.xml")
+        if pathname:
+            if not os.path.exists(pathname):
+                os.makedirs(pathname)
+            microsecondi = datetime.datetime.now().strftime("%f")
+            microsecondi = ''.join(filter(str.isdigit, microsecondi))  # Rimuovi caratteri non numerici
+            output_file = f"GR-{microsecondi}.xml"
+            output_file = os.path.join(pathname, output_file)
+        else:
+            output_file = datetime.datetime.now().strftime("GR-%Y%m%d_%H_%M_%S.xml")
+
         with open(output_file, "wb") as file:
             file.write(declaration.encode("utf-8"))
             tree.write(file, encoding="utf-8")
 
         print("<generate_good_receival_xml> File XML creato con successo: ", output_file)
         return output_file
-        
-if __name__ == "__main__":
-    
-    in_data = XMLInputDataManager()
-    in_data.setLists()
-    output_file=in_data.generate_xml()
-    HTTP=HttpFileSender()
-    address=HTTP.get_http_address_from_config_file()
-    HTTP.set_http_address(address)
-    HTTP.send_file(output_file)
+
+  #  def generate_good_receival_xml_async(self,num_files=1)
+

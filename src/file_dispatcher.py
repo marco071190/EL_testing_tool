@@ -1,13 +1,18 @@
 import requests
 import json
 import shutil
+import os
+import time
+import threading
 
 class HttpFileSender:
-        def __init__(self):
+        def __init__(self,save_file=True):
             self.http_send_address=""
             self.user='adm'
             self.pwd='2040'
             self.timeout_seconds=10
+            self.save_process_file=save_file
+            self.response_times=[]
         def set_http_address(self,http_address):
             self.http_send_address=http_address
         #process: 1 INBOUND (GOODS RECEIVAL) 2: OUTBOUND (PICKLIST)
@@ -19,7 +24,7 @@ class HttpFileSender:
                     # Ensure the address includes the protocol (e.g., http://)
                     if not http_addr.startswith("http://"):
                         http_addr = "http://" + http_addr
-                    print("get_http_address_from_config_file: ", http_addr)
+                        print("get_http_address_from_config_file: ", http_addr)
                 return http_addr
             elif process==2:
                 with open("pl_data.json", "r") as file:
@@ -30,6 +35,7 @@ class HttpFileSender:
                         http_addr = "http://" + http_addr
                     print("get_http_address_from_config_file: ", http_addr)
                 return http_addr
+
         def send_file(self, filename):
             auth=(self.user,self.pwd)
             if not self.http_send_address:
@@ -38,18 +44,48 @@ class HttpFileSender:
                 
                 headers = {'Content-Type': 'application/xml'}
                   # Send the POST request with the file
+                start_time = time.time()  # Record the start time
                 response = requests.post(self.http_send_address,data=open(filename,'rb').read(),auth=auth, headers=headers, timeout=self.timeout_seconds)
+                response_time = time.time() - start_time
                 # Check the response
                 if response.status_code == 202:
-                    print("Code 202:File sent successfully.")
+                    print("Code 202:File sent successfully.",f"Response time:{response_time}")
+                    if self.save_process_file==False:
+                        os.remove(filename)
+                    self.response_times.append(response_time) #use this only for asinconous
+                    return response_time
                 else:
                     print(f"File upload failed with status code: {response.status_code}")
+                    error_str="Error Number: " + str(response.status_code)
+                    self.response_times.append(error_str) #use this only for asinconous
                     # Continue with sending the file using the 'requests' library
                     # For example:
                     # response = requests.post(self.http_send_address, files=files)
                     # Check the response and handle it as needed
             except Exception as e:
                 print(f"An error occurred while sending the file: {e}")
+                self.response_times.append(e) #use this only for asinconous
+        
+        def send_file_asynconous(self,folder_path,num_messages,time_window):
+            print("<send_file_asynconous>")
+            filenames = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith('.xml')]
+            if not filenames:
+                print("Nessun file XML trovato nella cartella.")
+                return
+            interval = time_window / num_messages
+            threads = []
+            # Crea un thread separato per ciascun file da inviare
+            for filename in filenames[:num_messages]:
+                thread = threading.Thread(target=self.send_file, args=(filename,))
+                thread.start()
+                threads.append(thread)
+                time.sleep(interval)  # Attendi per l'intervallo specificato
+            
+            for thread in threads:
+                    thread.join()
+            
+            return self.response_times
+
 
 class FileShareSender:
         def __init__(self):

@@ -89,7 +89,8 @@ class PLWindow(QDialog):
         self.json_radio.setFont(QFont("Arial", 12))
         self.xml_radio = QRadioButton("XML")
         self.xml_radio.setFont(QFont("Arial", 12))
-
+        self.xml_radio.clicked.connect(lambda: self.toggle_file_format(1))
+        self.json_radio.clicked.connect(lambda:self.toggle_file_format(2))
         # Create vertical layout for more button
         v_more_btn_layout=QVBoxLayout()
         v_more_btn_layout.addWidget(self.more_button)
@@ -231,7 +232,7 @@ class PLWindow(QDialog):
             "Enable Order Type": self.enable_order_type_checkbox.isChecked(),
             "Enable Sequence": self.enable_sequence_checkbox.isChecked(),
             "Transmission Options": "HTTP" if self.http_radio.isChecked() else "Fileshare",
-            "Data Format": "JSON" if self.json_radio.isChecked() else "XML",
+            "File Format": "JSON" if self.json_radio.isChecked() else "XML",
             "Http Addr": self.http_address_input.text(),
             "Fileshare Path": self.fileshare_path_input.text(),
         }
@@ -260,14 +261,14 @@ class PLWindow(QDialog):
                     # Populate the fields with the loaded data
                     data = self.data_list[0]["Data"]
                     num_field_sets = self.data_list[0].get("FieldSets", 1)
-                    self.file_format = data.get("Data Format")
-
-                    if data.get("Data Format") == 'XML':
+                    if data.get("File Format") == 'XML':
                         self.xml_radio.setChecked(True)
                         self.json_radio.setChecked(False)
-                    elif data.get("Data Format") == 'JSON':
+                        self.file_format=1
+                    elif data.get("File Format") == 'JSON':
                         self.xml_radio.setChecked(False)
                         self.json_radio.setChecked(True)
+                        self.file_format=2
                     self.commFormat = data.get("Transmission Options")
                     if self.commFormat == "HTTP":
                         self.http_radio.setChecked(True)
@@ -313,20 +314,33 @@ class PLWindow(QDialog):
 
     def generatePickList(self):
         self.save_fields_on_file()
-        xml = XMLInputDataManager()
-        xml.setLists()
-        file_name = xml.generate_picklist_xml()
+        PL = PL_InputDataManager()
+        PL.setLists()
+        if self.file_format==1:
+            HTTP = HttpFileSender(1)
+            pl_file_name = PL.generate_picklist_xml()
+        elif self.file_format==2:
+            HTTP = HttpFileSender(2)
+            pl_file_name = PL.generate_picklist_json()    
         if self.communication_protocol == 1:
-            HTTP = HttpFileSender()
             address = HTTP.get_http_address_from_config_file(2)     #identifies the picklist 
             HTTP.set_http_address(address)
-            HTTP.send_file(file_name)
+            HTTP.send_file(pl_file_name)
         elif self.communication_protocol == 2:
             fshare = FileShareSender()
             path = fshare.get_fileshare_path_from_config_file(2)    #identifies the picklist 
             fshare.set_fileshare_path(path)
-            fshare.copy_file_in_path(file_name)
-
+            fshare.copy_file_in_path(pl_file_name)
+        
+    def toggle_file_format(self,file_type):
+        self.file_format = file_type
+        if self.file_format == 1:
+            self.xml_radio.setChecked(True)
+            self.json_radio.setChecked(False)
+        elif self.file_format == 2:
+            self.json_radio.setChecked(True)
+            self.xml_radio.setChecked(False)
+        
     def check_fields_before_send(self,prod_id,quantity,http):
         if not prod_id or not quantity or not http:
                 return -1  # Almeno uno dei campi è vuoto

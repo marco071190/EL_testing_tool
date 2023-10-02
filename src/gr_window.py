@@ -118,7 +118,8 @@ class GRWindow(QDialog):
         self.format_button_group = QButtonGroup()
         self.format_button_group.addButton(self.json_radio)
         self.format_button_group.addButton(self.xml_radio)
-
+        self.xml_radio.clicked.connect(lambda: self.toggle_file_format(1))
+        self.json_radio.clicked.connect(lambda:self.toggle_file_format(2))
         # Radio buttons for transmission options
         self.transmission_label = QLabel("Transmission Options:")
         self.transmission_label.setFont(QFont("Arial", 12))
@@ -225,7 +226,7 @@ class GRWindow(QDialog):
             "Expiring Date": [],
             "Enable Expiring Date": self.enable_expiring_date_checkbox.isChecked(),
             "Transmission Options": "HTTP" if self.http_radio.isChecked() else "Fileshare",
-            "Data Format": "JSON" if self.json_radio.isChecked() else "XML",
+            "File Format": "JSON" if self.json_radio.isChecked() else "XML",
             "Http Addr": self.http_address_input.text(),
             "Fileshare Path": self.fileshare_path_input.text(),
         }
@@ -253,14 +254,16 @@ class GRWindow(QDialog):
                     # Populate the fields with the loaded data
                     data = self.data_list[0]["Data"]
                     num_field_sets = self.data_list[0].get("FieldSets", 1)
-                    self.file_format = data.get("Data Format")
+                    self.file_format = data.get("File Format")
 
-                    if data.get("Data Format") == 'XML':
+                    if data.get("File Format") == 'XML':
                         self.xml_radio.setChecked(True)
                         self.json_radio.setChecked(False)
-                    elif data.get("Data Format") == 'JSON':
+                        self.file_format=1
+                    elif data.get("File Format") == 'JSON':
                         self.xml_radio.setChecked(False)
                         self.json_radio.setChecked(True)
+                        self.file_format=2
                     self.commFormat = data.get("Transmission Options")
                     if self.commFormat == "HTTP":
                         self.http_radio.setChecked(True)
@@ -300,11 +303,15 @@ class GRWindow(QDialog):
 
     def generateGoodsReceival(self):
         self.save_fields_on_file()
-        xml = GR_XMLInputDataManager()
-        xml.setLists()
-        file_name = xml.generate_goods_receival_xml()
+        gr_file = GR_InputDataManager()
+        gr_file.setLists()
+        if self.file_format==1:
+            HTTP = HttpFileSender(1)
+            file_name = gr_file.generate_goods_receival_xml()
+        elif self.file_format==2:
+            HTTP = HttpFileSender(2)
+            file_name = gr_file.generate_goods_receival_json()         
         if self.communication_protocol == 1:
-            HTTP = HttpFileSender()
             address = HTTP.get_http_address_from_config_file(1) #identifies GoodsReceival
             HTTP.set_http_address(address)
             HTTP.send_file(file_name)
@@ -335,6 +342,18 @@ class GRWindow(QDialog):
             self.http_radio.setChecked(False)
             print("Fileshare option")
     
+    def toggle_file_format(self,file_type):
+        self.file_format = file_type
+        if self.file_format == 1:
+            self.xml_radio.setChecked(True)
+            self.json_radio.setChecked(False)
+            self.file_format=1
+        elif self.file_format == 2:
+            self.json_radio.setChecked(True)
+            self.xml_radio.setChecked(False)
+            self.file_format=2
+        
+
     def show_error_message(self):
         error_box = QMessageBox()
         error_box.setIcon(QMessageBox.Critical)

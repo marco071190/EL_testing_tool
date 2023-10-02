@@ -6,13 +6,14 @@ import time
 import threading
 
 class HttpFileSender:
-        def __init__(self,save_file=True):
+        def __init__(self,content_type,save_file=True):
             self.http_send_address=""
             self.user='adm'
             self.pwd='2040'
             self.timeout_seconds=10
             self.save_process_file=save_file
             self.response_times=[]
+            self.content_type=content_type
         def set_http_address(self,http_address):
             self.http_send_address=http_address
         #process: 1 INBOUND (GOODS RECEIVAL) 2: OUTBOUND (PICKLIST)
@@ -41,8 +42,10 @@ class HttpFileSender:
             if not self.http_send_address:
                 raise ValueError("HTTP address is not set.")
             try:
-                
-                headers = {'Content-Type': 'application/xml'}
+                if self.content_type==1:
+                    headers = {'Content-Type': 'application/xml'}
+                elif self.content_type==2:
+                    headers = {'Content-Type': 'application/json'}
                   # Send the POST request with the file
                 start_time = time.time()  # Record the start time
                 response = requests.post(self.http_send_address,data=open(filename,'rb').read(),auth=auth, headers=headers, timeout=self.timeout_seconds)
@@ -58,6 +61,8 @@ class HttpFileSender:
                     print(f"File upload failed with status code: {response.status_code}")
                     error_str="Error Number: " + str(response.status_code)
                     self.response_times.append(error_str) #use this only for asinconous
+                    if self.save_process_file==False:
+                        os.remove(filename)
                     # Continue with sending the file using the 'requests' library
                     # For example:
                     # response = requests.post(self.http_send_address, files=files)
@@ -65,20 +70,25 @@ class HttpFileSender:
             except Exception as e:
                 print(f"An error occurred while sending the file: {e}")
                 self.response_times.append(e) #use this only for asinconous
-        
+                if self.save_process_file==False:
+                    os.remove(filename)
+
         def send_file_asynconous(self,folder_path,num_messages,time_window):
             print("<send_file_asynconous>")
-            filenames = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith('.xml')]
+            filenames = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith('.xml') or filename.endswith('.json')]
             if not filenames:
-                print("Nessun file XML trovato nella cartella.")
-                return
+                print("Nessun file trovato nella cartella.")
+                return 0
             interval = time_window / num_messages
             threads = []
             # Crea un thread separato per ciascun file da inviare
+            count=0
             for filename in filenames[:num_messages]:
+                count=count+1
                 thread = threading.Thread(target=self.send_file, args=(filename,))
                 thread.start()
                 threads.append(thread)
+                print("Message number:",count)
                 time.sleep(interval)  # Attendi per l'intervallo specificato
             
             for thread in threads:

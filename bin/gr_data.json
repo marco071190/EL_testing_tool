@@ -1,1 +1,1 @@
-[{"Data": {"Product Id": ["003208832500", "43009900"], "Quantity": ["2", "4"], "Expiring Date": ["2", "1"], "Enable Expiring Date": false, "Transmission Options": "Fileshare", "Data Format": "XML", "Http Addr": "", "Fileshare Path": "C:\\Test\\import\\GR"}, "FieldSets": 2}]
+[{"Data": {"Product Id": ["003208832500"], "Quantity": ["5"], "Expiring Date": [""], "Enable Expiring Date": false, "Transmission Options": "HTTP", "Data Format": "XML", "Http Addr": "http://localhost:8090/api/goodsreceivals/import", "Fileshare Path": ""}, "FieldSets": 1}]

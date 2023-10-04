@@ -10,7 +10,6 @@ class MultipleMessageSender(QMainWindow):
         super().__init__()
         self.setWindowTitle("Message Sender")
         self.setGeometry(100, 100, 400, 200)
-        self.max_msg_per_sec=900
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         self.process_type=ptype
@@ -52,17 +51,11 @@ class MultipleMessageSender(QMainWindow):
             time_window_num = int(time_window_text)
         except ValueError:
             time_window_num = None      
-        if message_num is None or time_window_num is None or message_num<=0 or time_window_num<=0:
+        if message_num is None or time_window_num is None or message_num<0 or time_window_num<0:
             dialog = QMessageBox()
             dialog.setIcon(QMessageBox.Critical)
             dialog.setWindowTitle("Error")
             dialog.setText("Input not valid: Check number field and time interval field")
-            dialog.exec()
-        elif (int(message_num/time_window_num) > self.max_msg_per_sec):
-            dialog = QMessageBox()
-            dialog.setIcon(QMessageBox.Critical)
-            dialog.setWindowTitle("Error")
-            dialog.setText(f"Max message frequency exceeded.Reduce number of messages or increase time window. Maximum frequency is: {self.max_msg_per_sec} msg/sec")
             dialog.exec()
         else:
             print("asinc")

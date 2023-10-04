@@ -123,7 +123,7 @@ class GR_InputDataManager:
             file.write(declaration.encode("utf-8"))
             tree.write(file, encoding="utf-8")
 
-        print("<generate_good_receival_xml> File XML creato con successo: ", output_file)
+        print("<generate_good_receival_xml> XML file created successfully: ", output_file)
         return output_file
 
   #  def generate_good_receival_xml_async(self,num_files=1)

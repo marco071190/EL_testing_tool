@@ -137,7 +137,7 @@ class PL_InputDataManager:
             file.write(declaration.encode("utf-8"))
             tree.write(file, encoding="utf-8")
 
-        print("<generate_good_receival_xml> File XML creato con successo: ", output_file)
+        print("<generate_picklist_xml> XML file  created successfully: ", output_file)
         return output_file
 
     def generate_picklist_json(self, pathname=None):
@@ -186,7 +186,7 @@ class PL_InputDataManager:
         with open(output_file, "w") as file:
             json.dump(picklist_data, file, indent=4)
 
-        print("JSON file created successfully:", output_file)
+        print("<generate_picklist_json> JSON file created successfully:", output_file)
         return output_file
 
 if __name__ == "__main__":

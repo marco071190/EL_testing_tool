@@ -31,6 +31,10 @@ class GR_InputDataManager:
     def set_quantity_list(self):
         self.quantity_list = self.data["Quantity"]
         print("Quantity list:", self.quantity_list)
+    
+    def set_product_name_list(self):
+        self.product_name_list = self.data["Product Name"]
+        print("Product Name list:", self.product_name_list)
 
     def set_expiry_date_list(self):
         self.expiry_date_list = self.data["ExpiryDate"]
@@ -49,6 +53,7 @@ class GR_InputDataManager:
     def setLists(self):
         self.set_product_id_list()
         self.set_quantity_list()
+        self.set_product_name_list()
     
     def generate_random_number(self):
         current_date_time = datetime.datetime.now()
@@ -100,6 +105,9 @@ class GR_InputDataManager:
             
             quantity = ET.SubElement(goods_receival_line,"Quantity")
             quantity.text = self.quantity_list[i]
+
+            product_name = ET.SubElement(goods_receival_line,"ProductName")
+            product_name.text = self.product_name_list[i]
         
         tree = ET.ElementTree(import_operation)
 
@@ -146,7 +154,8 @@ class GR_InputDataManager:
                 "TransactionId": n_transaction_id,
                 "ExtReceivalListId": random_ext_receival_list_id,
                 "ExtProductId": self.product_id_list[i],
-                "Quantity": self.quantity_list[i]
+                "Quantity": self.quantity_list[i],
+                "ProductName": self.product_name_list[i],
             }
             goods_receival_data["ImportOperation"]["Lines"]["GoodsReceivalLine"].append(goods_receival_line)
 

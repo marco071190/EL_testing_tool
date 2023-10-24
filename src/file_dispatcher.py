@@ -6,11 +6,11 @@ import time
 import threading
 
 class HttpFileSender:
-        def __init__(self,content_type,save_file=True):
+        def __init__(self,content_type,save_file=True, timeout_seconds=10):
             self.http_send_address=""
             self.user='adm'
             self.pwd='2040'
-            self.timeout_seconds=10
+            self.timeout_seconds=timeout_seconds
             self.save_process_file=save_file
             self.response_times=[]
             self.content_type=content_type
@@ -74,7 +74,7 @@ class HttpFileSender:
                     os.remove(filename)
 
         def send_file_asynconous(self,folder_path,num_messages,time_window):
-            print("<send_file_asynconous>")
+            print("<send_file_asynconous> timeout:",self.timeout_seconds)
             filenames = [os.path.join(folder_path, filename) for filename in os.listdir(folder_path) if filename.endswith('.xml') or filename.endswith('.json')]
             if not filenames:
                 print("Nessun file trovato nella cartella.")

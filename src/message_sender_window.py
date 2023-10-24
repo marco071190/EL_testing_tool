@@ -30,10 +30,18 @@ class MultipleMessageSender(QMainWindow):
         self.save_checkbox = QCheckBox("Save generated payload files")
         self.save_checkbox.setFont(QFont("Arial", 8))
         self.start_button.clicked.connect(self.start_pressed)
+    # Add a connection timeout input field
+        self.timeout_label = QLabel("Connection Timeout (seconds):")
+        self.timeout_label.setFont(QFont("Arial", 12))
+        self.timeout_input = QLineEdit()
+        self.timeout_input.setPlaceholderText("Insert the connection timeout (seconds)")
+        self.timeout_input.setFont(QFont("Arial", 12))
         layout.addWidget(self.message_count_label)
         layout.addWidget(self.message_count_input)
         layout.addWidget(self.interval_label)
         layout.addWidget(self.interval_input)
+        layout.addWidget(self.timeout_label)
+        layout.addWidget(self.timeout_input)
         layout.addWidget(self.start_button)
         layout.addWidget(self.save_checkbox)
         central_widget.setLayout(layout)
@@ -42,7 +50,8 @@ class MultipleMessageSender(QMainWindow):
     def start_pressed(self):
         message_num_text = self.message_count_input.text()
         time_window_text = self.interval_input.text()
-        print("<start_pressed> Number of messages:", message_num_text, "Time Window (seconds):", time_window_text)
+        timeout_tex = self.timeout_input.text()
+        print("<start_pressed> Number of messages:", message_num_text, "Time Window (seconds):", time_window_text, "Timeou (seconds):",timeout_tex)
         try:
             message_num = int(message_num_text)
         except ValueError:
@@ -50,7 +59,12 @@ class MultipleMessageSender(QMainWindow):
         try:
             time_window_num = int(time_window_text)
         except ValueError:
-            time_window_num = None      
+            time_window_num = None
+        try:
+            timeout_num = int(timeout_tex)
+        except ValueError:
+            timeout_num=10
+
         if message_num is None or time_window_num is None or message_num<0 or time_window_num<0:
             dialog = QMessageBox()
             dialog.setIcon(QMessageBox.Critical)
@@ -59,7 +73,7 @@ class MultipleMessageSender(QMainWindow):
             dialog.exec()
         else:
             print("asinc")
-            Params=TestParameter(message_num,time_window_num,self.save_checkbox.isChecked(),self.process_type)
+            Params=TestParameter(message_num,time_window_num,timeout_num,self.save_checkbox.isChecked(),self.process_type)
             self.message_sender_controller.set_test_parameter(Params)
             self.message_sender_controller.run_async()
 

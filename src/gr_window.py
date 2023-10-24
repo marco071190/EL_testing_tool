@@ -186,6 +186,8 @@ class GRWindow(QDialog):
         product_id_input.setFont(QFont("Arial", 12))
         quantity_input = QLineEdit()
         quantity_input.setFont(QFont("Arial", 12))
+        product_name_input=QLineEdit()
+        product_name_input.setFont(QFont("Arial", 12))
         expiring_date_input = QLineEdit()
         expiring_date_input.setFont(QFont("Arial", 12))
         external_order_id_input = QLineEdit()
@@ -195,6 +197,8 @@ class GRWindow(QDialog):
         # Create QLabel labels with custom font sizes
         product_id_label = QLabel("Product Id")
         product_id_label.setFont(QFont("Arial", 12))
+        product_name_label= QLabel("Product Name")
+        product_name_label.setFont(QFont("Arial", 12))
         quantity_label = QLabel("Quantity")
         quantity_label.setFont(QFont("Arial", 12))
         expiring_date_label = QLabel("Expiring Date")
@@ -202,6 +206,7 @@ class GRWindow(QDialog):
 
         field_set_layout.addRow(product_id_label, product_id_input)
         field_set_layout.addRow(quantity_label, quantity_input)
+        field_set_layout.addRow(product_name_label,product_name_input)
         field_set_layout.addRow(expiring_date_label, expiring_date_input)
 
         field_set_widget = QWidget()
@@ -215,7 +220,7 @@ class GRWindow(QDialog):
         field_set_layout.addWidget(line)
         scroll_layout.addWidget(field_set_widget)
 
-        self.field_sets.append([field_set_widget, product_id_input, quantity_input, expiring_date_input])
+        self.field_sets.append([field_set_widget, product_id_input, quantity_input, product_name_input, expiring_date_input])
         self.adjustSize()
 
     def save_fields_on_file(self):
@@ -223,6 +228,7 @@ class GRWindow(QDialog):
         data = {
             "Product Id": [],
             "Quantity": [],
+            "Product Name": [],
             "Expiring Date": [],
             "Enable Expiring Date": self.enable_expiring_date_checkbox.isChecked(),
             "Transmission Options": "HTTP" if self.http_radio.isChecked() else "Fileshare",
@@ -232,9 +238,10 @@ class GRWindow(QDialog):
         }
 
         for field_set in self.field_sets:
-            _, product_id, quantity, expiring_date = field_set
+            _, product_id, quantity, product_name, expiring_date = field_set
             data["Product Id"].append(product_id.text())
             data["Quantity"].append(quantity.text())
+            data["Product Name"].append(product_name.text())
             data["Expiring Date"].append(expiring_date.text())
 
         # Save the data including the number of field sets created
@@ -288,9 +295,10 @@ class GRWindow(QDialog):
                     for _ in range(num_field_sets - 1):
                         self.add_field_set(self.scroll_layout)
                     for i, field_set in enumerate(self.field_sets):
-                        _, product_id, quantity, expiring_date = field_set
+                        _, product_id, quantity, product_name, expiring_date = field_set
                         product_id.setText(data["Product Id"][i])
                         quantity.setText(data["Quantity"][i])
+                        product_name.setText(data["Product Name"][i])
                         expiring_date.setText(data["Expiring Date"][i])
                         if is_expiring_date_checked:
                             expiring_date.setEnabled(True)
@@ -324,7 +332,7 @@ class GRWindow(QDialog):
     def toggle_expiring_date_field(self, state):
         self.expiring_date_enabled = state == Qt.Checked
         for field_set in self.field_sets:
-            _, _,_,expiring_date_input = field_set
+            _, _,_,_,expiring_date_input = field_set
             expiring_date_input.setEnabled(self.expiring_date_enabled)
 
     def toggle_trasmission_options(self, method):

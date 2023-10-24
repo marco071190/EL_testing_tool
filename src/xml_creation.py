@@ -53,6 +53,7 @@ class PL_InputDataManager:
     def setLists(self):
         self.set_product_id_list()
         self.set_quantity_list()
+        self.set_product_id_list()
         self.set_sequence_list()
         self.set_order_type_list()
     
@@ -103,6 +104,7 @@ class PL_InputDataManager:
             
             quantity = ET.SubElement(picklist_line,"Quantity")
             quantity.text = self.quantity_list[i]
+            
             ext_order_line_id = ET.SubElement(picklist_line,"ExtOrderlineId")
             ext_order_line_id.text=str(i+1)#str(i)
             # Aggiungi altri elementi come Quantity, Sequence, ecc. allo stesso modo

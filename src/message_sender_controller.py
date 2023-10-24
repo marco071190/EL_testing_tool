@@ -8,9 +8,10 @@ import time
 import csv
 import shutil
 class TestParameter:
-    def __init__(self,num,time,flag, ptype):
+    def __init__(self,num,time,timeout,flag, ptype):
         self.number_of_msg = num
         self.time_window = time
+        self.timeout_sec=timeout
         self.save_file = flag
         self.process_type= ptype
 
@@ -28,7 +29,7 @@ class MessageSenderController:
 
     def set_test_parameter(self,TestParameter):
         self.test_parameter=TestParameter
-        print("<set_test_parameter> number of messages:",self.test_parameter.number_of_msg,"Time Window [sec]",self.test_parameter.time_window)
+        print("<set_test_parameter> number of messages:",self.test_parameter.number_of_msg,"Time Window [sec]",self.test_parameter.time_window, "TimeOut [sec]",self.test_parameter.timeout_sec)
 
     def save_report(self):
         current_datetime = datetime.datetime.now()
@@ -92,7 +93,7 @@ class MessageSenderController:
         folder_path = "temp" 
         report_folder="report"
         self.create_file_list(folder_path)
-        file_sender_ASYNC = HttpFileSender(self.file_format,self.test_parameter.save_file)
+        file_sender_ASYNC = HttpFileSender(self.file_format,self.test_parameter.save_file,self.test_parameter.timeout_sec)
         if self.test_parameter.process_type is 1:
             address=file_sender_ASYNC.get_http_address_from_config_file(1)
         elif self.test_parameter.process_type is 2:

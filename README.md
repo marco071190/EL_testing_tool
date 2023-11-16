@@ -1,7 +1,7 @@
 # EL_testing_tool
 Welcome to the el_testing_tool!
 
-This software, developed in Python and Qt, automates testing and XML/JSON file creation.
+This software, developed in Python and Qt, automates testing and XML/JSON file creation. Messages are Goods Receival and PickList
 
 Key features include:
 

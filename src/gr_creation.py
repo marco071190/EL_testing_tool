@@ -83,7 +83,7 @@ class GR_InputDataManager:
         
         random_ext_receival_list_id = self.generate_random_string(10)
         n_transaction_id = self.generate_random_number()
-
+        s_batch_id = self.generate_random_string(5)
         # Crea un oggetto ElementTree con la radice "ImportOperation"
         import_operation = ET.Element("ImportOperation")
 
@@ -102,6 +102,9 @@ class GR_InputDataManager:
 
             ext_product_id = ET.SubElement(goods_receival_line, "ExtProductId")
             ext_product_id.text = self.product_id_list[i]
+
+            batch_id = ET.SubElement(goods_receival_line, "BatchId")
+            batch_id.text = s_batch_id
             
             quantity = ET.SubElement(goods_receival_line,"Quantity")
             quantity.text = self.quantity_list[i]
@@ -140,6 +143,7 @@ class GR_InputDataManager:
         print("generate_good_receival_json")
         random_ext_receival_list_id = self.generate_random_string(10)
         n_transaction_id = self.generate_random_number()
+        s_batch_id = self.generate_random_string(5)
 
         goods_receival_data = {
             "ImportOperation": {
@@ -154,6 +158,7 @@ class GR_InputDataManager:
                 "TransactionId": n_transaction_id,
                 "ExtReceivalListId": random_ext_receival_list_id,
                 "ExtProductId": self.product_id_list[i],
+                "BatchId":s_batch_id,
                 "Quantity": self.quantity_list[i],
                 "ProductName": self.product_name_list[i],
             }
